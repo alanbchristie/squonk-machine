@@ -1,0 +1,114 @@
+---
+
+- block:
+
+  - name: Create ~/git directory
+    file:
+      path: ${HOME}/git
+      owner: squonk
+      group: squonk
+      state: directory
+
+  - name: Add JDK path to .profile
+    lineinfile:
+      path: ${HOME}/.profile
+      line: export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+
+  - name: Clone squonk
+    git:
+      repo: https://github.com/InformaticsMatters/squonk.git
+      version: HEAD
+      dest: ${HOME}/git/squonk
+      clone: yes
+
+  - name: Clone pipelines
+    git:
+      repo: https://github.com/InformaticsMatters/pipelines.git
+      version: HEAD
+      dest: ${HOME}/git/pipelines
+      clone: yes
+
+  - name: Copy directories (from pipelines)
+    shell: ./copy.dirs.sh
+    args:
+      chdir: ${HOME}/git/pipelines
+      creates: ${HOME}/git/squonk/docker/deploy/data/docker-services/pipelines/setup.py
+
+  - name: Pull Squonk-related Docker images
+    shell: ./images-pull-squonk.sh
+    args:
+      chdir: ${HOME}/git/squonk/docker/deploy
+
+  # Rather than pull all the extras (that's beyonds the capacity of the
+  # current VirtualBox base image, which has a default 10GiB drive)
+  # let's pull the absolute minimum for a demo...
+  - name: Pull extra Docker images (a minimal set)
+    docker_image:
+      name: "{{ item }}"
+      state: present
+    with_items:
+    - rabbitmq:3-management
+    - nginx:1.13
+    - jboss/keycloak-postgres:2.1.0.Final
+    - informaticsmatters/rdkit_cartridge:Release_2016_03_1
+    - busybox:latest
+
+  - name: Create nginx certificates directory
+    file:
+      path: ${HOME}/git/squonk/docker/deploy/images/nginx/certs/squonk
+      owner: squonk
+      group: squonk
+      state: directory
+
+  - name: Generate self-signed certificate
+    command: openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+      -keyout images/nginx/certs/squonk/privkey.pem \
+      -out images/nginx/certs/squonk/fullchain.pem \
+      -subj '/CN=www.mydom.com/O=My Company Name LTD./C=UK'
+    args:
+      chdir: ${HOME}/git/squonk/docker/deploy
+      creates: ${HOME}/git/squonk/docker/deploy/images/nginx/certs/squonk/fullchain.pem
+
+  - name: Create dhparam.pem
+    command: openssl dhparam -out images/nginx/certs/squonk/dhparam.pem 2048
+    args:
+      chdir: ${HOME}/git/squonk/docker/deploy
+      creates: ${HOME}/git/squonk/docker/deploy/images/nginx/certs/squonk/dhparam.pem
+
+  - name: Copy gradle.properties
+    copy:
+      src: secrets/gradle.properties
+      dest: ${HOME}/.gradle/
+      owner: squonk
+      group: squonk
+      mode: u=rw,g=r,o=r
+
+  - name: Copy environment (if not already done)
+    command: cp setenv-default.sh setenv.sh
+    args:
+      chdir: ${HOME}/git/squonk/docker/deploy
+      creates: ${HOME}/git/squonk/docker/deploy/setenv.sh
+
+  - name: Source setenv from .profile
+    lineinfile:
+      path: ${HOME}/.bashrc
+      line: source ${HOME}/git/squonk/docker/deploy/setenv.sh
+
+  - name: Setup core containers
+    shell: source setenv.sh && ./containers-setup-core.sh
+    args:
+      chdir: ${HOME}/git/squonk/docker/deploy
+
+  - name: Setup application containers
+    shell: source setenv.sh && ./containers-setup-app.sh
+    args:
+      chdir: ${HOME}/git/squonk/docker/deploy
+
+  - name: Run Squonk
+    shell: source setenv.sh && ./containers-run.sh
+    args:
+      chdir: ${HOME}/git/squonk/docker/deploy
+
+  # The above block needs to be run as 'squonk`
+  become: yes
+  become_user: squonk

@@ -1,0 +1,12 @@
+---
+
+- hosts: default
+  remote_user: vagrant
+  become: true
+  become_method: sudo
+  become_user: root
+  roles:
+  - angstwad.docker_ubuntu
+  - machine
+  - squonk
+

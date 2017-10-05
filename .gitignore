@@ -1,0 +1,15 @@
+# IntelliJ...
+.idea/
+
+# Vagranmt/Ansible stuff...
+.vagrant/
+*.log
+playbook.retry
+
+# Secret secrets
+# Keep the directory but not the contents
+secrets/*
+!secrets/.gitkeep
+
+# macOS
+.DS_Store

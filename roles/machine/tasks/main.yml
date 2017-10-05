@@ -1,0 +1,16 @@
+---
+
+- name: Install various packages
+  apt:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+  - git
+  - jq
+  - openjdk-8-jdk
+
+- name: Create squonk user
+  user:
+    name: squonk
+    shell: /bin/bash
+    groups: docker,sudo
