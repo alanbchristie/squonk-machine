@@ -18,8 +18,8 @@ Checking your tool versions:
     $ vagrant --version
     
 >   Personally, as Ansible is a Python application, I run Vagrant from
-    within a Python _ansible_ virtualenv. Create a virtualenv environment
-    and install Ansible in it and run the machine form there:
+    within a Python ansible _virtualenv_. Create a [virtualenv] environment
+    and install Ansible in it and run the machine from there:
     
     $ mkvirtualenv -p python2 ansible
     (ansible) $ pip install ansible==2.4.0
@@ -72,4 +72,5 @@ October 2017
 [Using Vagrant and Ansible]: http://docs.ansible.com/ansible/latest/guide_vagrant.html
 [Vagrant]: https://www.vagrantup.com/downloads.html
 [VirtualBox]: https://www.virtualbox.org/wiki/Downloads
+[VirtualEnv]: https://virtualenvwrapper.readthedocs.io/en/latest/
 
