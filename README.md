@@ -17,12 +17,12 @@ Checking your tool versions:
     $ ansible --version
     $ vagrant --version
     
->   Personally, as Ansible is Python application, I run Vagrant from
-    within a Python _ansible_ virtualenv. Create a virtualenv environmane
+>   Personally, as Ansible is a Python application, I run Vagrant from
+    within a Python _ansible_ virtualenv. Create a virtualenv environment
     and install Ansible in it and run the machine form there:
     
     $ mkvirtualenv -p python2 ansible
-    (ansible) $ pip install ansible==2.0.0
+    (ansible) $ pip install ansible==2.4.0
     
 ## Prerequisites
 
@@ -31,7 +31,7 @@ Before you can successfully spin-up your VM a number of files need to be
 provided by you that are particular to your installation. Ansible has been
 instructed to find these in the `secrets` directory and they are:
 
--   `gradle.proiperties` which contains your ChenAxon maven account details
+-   `gradle.properties` which contains your ChenAxon maven account details
 
 ## Getting started
 To build and start the VM (and also download any [Ansible Galaxy] modules)
@@ -40,14 +40,11 @@ convenient wrapper script:
 
     $ ./machine.sh
 
->   The base VM image is large and (depending on your connection speed)
-    takes a while to construct the first time it's run. Provisioning also
-    relies on a number of external Docker images, pulled rom the Docker Hub.
-    Although only a minimal set of images is pulled this process can take a
-    significant length of time.
+>   Provisioning relies on a number of external Docker images,
+    pulled rom the Docker Hub. Although only a minimal set of images
+    is pulled, the process can still take a significant length of time.
 
-To re-run the provisioning stage, after using the convenient script,
-on an existing VM:
+To re-run the provisioning stage on an exiting VM:
 
     $ vagrant provision
 
